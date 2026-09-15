@@ -13,7 +13,20 @@ services:
     build: ./backend
 
     ports:
-      - '3000:3000'
+      - '${BACKEND_PORT}:3000'
+
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
 
     depends_on:
       - postgres
@@ -21,9 +34,9 @@ services:
   postgres:
     image: postgres:17
     environment:
-      POSTGRES_DB: finance
-      POSTGRES_USER: finance
-      POSTGRES_PASSWORD: finance
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
     ports:
       - '5432:5432'
