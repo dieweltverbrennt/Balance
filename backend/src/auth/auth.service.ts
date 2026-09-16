@@ -32,11 +32,8 @@ export class AuthService {
       passwordHash,
     );
 
-    const accessToken = await this.jwtService.signAsync({
-      sub: user.id,
-    });
-
     return {
+      name: user.name,
       accessToken: await this.generateAccessToken(user.id),
     };
   }
@@ -58,6 +55,7 @@ export class AuthService {
     }
 
     return {
+      name: user.name,
       accessToken: await this.generateAccessToken(user.id),
     };
   }

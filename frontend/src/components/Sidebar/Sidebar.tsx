@@ -9,6 +9,7 @@ import {
   Settings,
 } from 'lucide-react'
 import './Sidebar.scss'
+import logo from '@/assets/logo.png'
 
 const navigationItems: NavigationItem[] = [
   {
@@ -41,7 +42,10 @@ const navigationItems: NavigationItem[] = [
 export const Sidebar = () => {
   return (
     <aside className="sidebar">
-      <div className="sidebar__logo">Balance</div>
+      <div className="sidebar__logo">
+        <img src={logo} className="sidebar__image" alt="logo" />
+        Balance
+      </div>
 
       <nav className="sidebar__nav">
         {navigationItems.map((item) => {
