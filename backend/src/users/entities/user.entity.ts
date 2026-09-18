@@ -4,7 +4,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+
+import { Category } from '../../categories/entities/category.entity';
 
 @Entity('users')
 export class User {
@@ -27,6 +30,9 @@ export class User {
     type: 'varchar',
   })
   passwordHash: string;
+
+  @OneToMany(() => Category, (category) => category.user)
+  categories: Category[];
 
   @CreateDateColumn({
     name: 'created_at',
