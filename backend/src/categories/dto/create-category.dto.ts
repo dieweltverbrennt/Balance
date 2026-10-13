@@ -1,18 +1,33 @@
 import {
+  IsArray,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
-  Min,
+  MaxLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 import { CategoryType } from '../entities/category.entity';
+
+class CreateSubcategoryDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSubcategoryDto)
+  subcategories?: CreateSubcategoryDto[];
+}
 
 export class CreateCategoryDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   name: string;
 
   @IsEnum(CategoryType)
@@ -27,11 +42,8 @@ export class CreateCategoryDto {
   icon: string;
 
   @IsOptional()
-  @IsUUID()
-  parentCategoryId?: string;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  sortOrder?: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSubcategoryDto)
+  subcategories?: CreateSubcategoryDto[];
 }

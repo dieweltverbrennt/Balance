@@ -62,20 +62,15 @@ export class Category {
 
   @Column({
     type: 'varchar',
+    default: null,
   })
-  color: string;
+  color: string | null;
 
   @Column({
     type: 'varchar',
+    default: null,
   })
-  icon: string;
-
-  @Column({
-    name: 'sort_order',
-    type: 'integer',
-    default: 0,
-  })
-  sortOrder: number;
+  icon: string | null;
 
   @CreateDateColumn({
     name: 'created_at',

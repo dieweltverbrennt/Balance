@@ -1,6 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
-import { CategoryType } from '../entities/category.entity';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateCategoryDto {
   @IsOptional()
@@ -9,16 +7,10 @@ export class UpdateCategoryDto {
   name?: string;
 
   @IsOptional()
-  @IsEnum(CategoryType)
-  type?: CategoryType;
-
-  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   color?: string;
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   icon?: string;
 }

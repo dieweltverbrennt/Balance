@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
 import { Repository } from 'typeorm';
 
 import { User } from './entities/user.entity';
@@ -17,8 +18,15 @@ export class UsersService {
     });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({
+  async findByEmail(
+    email: string,
+    manager?: EntityManager,
+  ): Promise<User | null> {
+    const repository = manager
+      ? manager.getRepository(User)
+      : this.usersRepository;
+
+    return repository.findOne({
       where: { email },
     });
   }
@@ -27,13 +35,14 @@ export class UsersService {
     name: string,
     email: string,
     passwordHash: string,
+    manager: EntityManager,
   ): Promise<User> {
-    const user = this.usersRepository.create({
+    const user = manager.create(User, {
       name,
       email,
       passwordHash,
     });
 
-    return this.usersRepository.save(user);
+    return manager.save(User, user);
   }
 }

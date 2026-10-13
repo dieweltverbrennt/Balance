@@ -4,19 +4,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 
 import { Category } from './entities/category.entity';
 
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { ReorderCategoriesDto } from './dto/reorder-categories.dto';
+
+import { DEFAULT_CATEGORIES } from './constants/default-categories';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoriesRepository: Repository<Category>,
+    private readonly dataSource: DataSource,
   ) {}
 
   private async findUserCategories(categoryId: string, userId: string) {
@@ -35,60 +37,88 @@ export class CategoriesService {
   }
 
   async getCategories(userId: string) {
-    return this.categoriesRepository.find({
+    const categories = await this.categoriesRepository.find({
       where: {
-        userId,
+        user: {
+          id: userId,
+        },
       },
       relations: {
         subcategories: true,
       },
-      order: {
-        sortOrder: 'ASC',
-      },
     });
+
+    return categories;
   }
 
   async createCategory(userId: string, data: CreateCategoryDto) {
-    let parentCategory: Category | null = null;
+    return this.dataSource.transaction(async (manager) => {
+      const repository = manager.getRepository(Category);
 
-    if (data.parentCategoryId) {
-      parentCategory = await this.categoriesRepository.findOne({
-        where: {
-          id: data.parentCategoryId,
-          userId: userId,
-        },
+      const category = repository.create({
+        name: data.name,
+        type: data.type,
+        color: data.color,
+        icon: data.icon,
+        user: { id: userId },
+        parentCategory: null,
       });
 
-      if (!parentCategory) {
-        throw new NotFoundException('Родительская категория не найдена');
-      }
+      const savedCategory = await repository.save(category);
 
-      if (parentCategory.parentCategoryId) {
-        throw new BadRequestException(
-          'У подкатегории не может быть подкатегорий',
-        );
-      }
+      await this.createSubcategories(
+        manager,
+        savedCategory,
+        data.subcategories ?? [],
+        userId,
+        data.type,
+      );
 
-      if (parentCategory.type !== data.type) {
-        throw new BadRequestException(
-          'Тип категории должен совпадать с типом родительской категории',
-        );
-      }
+      return repository.findOne({
+        where: {
+          id: savedCategory.id,
+          user: { id: userId },
+        },
+        relations: {
+          subcategories: true,
+        },
+      });
+    });
+  }
+
+  private async createSubcategories(
+    manager: EntityManager,
+    parent: Category,
+    subcategories: CreateCategoryDto['subcategories'],
+    userId: string,
+    type: Category['type'],
+  ): Promise<void> {
+    if (!subcategories?.length) {
+      return;
     }
 
-    const category = this.categoriesRepository.create({
-      name: data.name,
-      type: data.type,
-      color: data.color,
-      icon: data.icon,
-      sortOrder: data.sortOrder ?? 0,
-      user: {
-        id: userId,
-      },
-      parentCategory,
-    });
+    const repository = manager.getRepository(Category);
 
-    return this.categoriesRepository.save(category);
+    for (const subcategoryData of subcategories) {
+      const subcategory = repository.create({
+        name: subcategoryData.name,
+        type,
+        color: null,
+        icon: null,
+        user: { id: userId },
+        parentCategory: parent,
+      });
+
+      const savedSubcategory = await repository.save(subcategory);
+
+      await this.createSubcategories(
+        manager,
+        savedSubcategory,
+        subcategoryData.subcategories ?? [],
+        userId,
+        type,
+      );
+    }
   }
 
   async updateCategory(
@@ -128,53 +158,16 @@ export class CategoriesService {
     };
   }
 
-  async reorderCategories(userId: string, data: ReorderCategoriesDto) {
-    const categories = await this.categoriesRepository.find({
-      where: {
-        userId,
-        id: In(data.categoryIds),
-      },
-    });
-
-    if (categories.length !== data.categoryIds.length) {
-      throw new NotFoundException('Одна или несколько категорий не найдены');
-    }
-
-    const parentCategoryIds = new Set(
-      categories.map((category) => category.parentCategoryId ?? null),
+  async createDefaultCategories(userId: string, manager: EntityManager) {
+    const categories = DEFAULT_CATEGORIES.map((category) =>
+      manager.create(Category, {
+        ...category,
+        user: {
+          id: userId,
+        },
+      }),
     );
 
-    if (parentCategoryIds.size > 1) {
-      throw new BadRequestException('Категории должны быть на одном уровне');
-    }
-
-    await this.categoriesRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        await Promise.all(
-          data.categoryIds.map((categoryId, index) =>
-            transactionalEntityManager.update(
-              Category,
-              {
-                id: categoryId,
-                userId,
-              },
-              {
-                sortOrder: index,
-              },
-            ),
-          ),
-        );
-      },
-    );
-
-    return this.categoriesRepository.find({
-      where: {
-        userId,
-        id: In(data.categoryIds),
-      },
-      order: {
-        sortOrder: 'ASC',
-      },
-    });
+    await manager.save(Category, categories);
   }
 }

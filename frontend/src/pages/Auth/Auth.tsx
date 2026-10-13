@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserRound, Mail, Lock, LockKeyhole } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -39,7 +40,6 @@ export const Auth = () => {
   const onLogin = async (data: LoginFormData) => {
     try {
       const response = await login(data)
-
       if (!response.accessToken || !response.name) {
         throw new Error('Не удалось войти в аккаунт')
       }
@@ -88,7 +88,7 @@ export const Auth = () => {
           <div className="auth__input">
             <Mail className="auth__icon" />
 
-            <input
+            <Input
               className="w-full"
               type="email"
               placeholder="Email"
@@ -105,7 +105,7 @@ export const Auth = () => {
           <div className="auth__input">
             <Lock className="auth__icon" />
 
-            <input
+            <Input
               className="w-full"
               type="password"
               placeholder="Пароль"
@@ -131,7 +131,7 @@ export const Auth = () => {
           <div className="auth__input">
             <UserRound className="auth__icon" />
 
-            <input
+            <Input
               className="w-full"
               type="text"
               placeholder="Имя"
@@ -147,7 +147,7 @@ export const Auth = () => {
           <div className="auth__input">
             <Mail className="auth__icon" />
 
-            <input
+            <Input
               className="w-full"
               type="email"
               placeholder="Email"
@@ -163,7 +163,7 @@ export const Auth = () => {
           <div className="auth__input">
             <Lock className="auth__icon" />
 
-            <input
+            <Input
               className="w-full"
               type="password"
               placeholder="Пароль"
@@ -179,7 +179,7 @@ export const Auth = () => {
           <div className="auth__input">
             <LockKeyhole className="auth__icon" />
 
-            <input
+            <Input
               className="w-full"
               type="password"
               placeholder="Повторите пароль"
