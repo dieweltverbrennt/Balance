@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Post,
-  Put,
+  Patch,
   Delete,
   Param,
   Body,
@@ -35,13 +35,13 @@ export class CategoriesController {
     return this.categoriesService.createCategory(user.id, dto);
   }
 
-  @Put(':id')
+  @Patch(':id')
   updateCategory(
     @CurrentUser() user: User,
-    @Param() id: string,
+    @Param('id') id: string,
     @Body() dto: UpdateCategoryDto,
   ) {
-    this.categoriesService.updateCategory(id, user.id, dto);
+    return this.categoriesService.updateCategory(id, user.id, dto);
   }
 
   @Delete(':id')

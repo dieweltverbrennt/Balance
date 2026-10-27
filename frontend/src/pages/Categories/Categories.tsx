@@ -1,37 +1,51 @@
-import './Categories.scss'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
 import { useState } from 'react'
-import {
-  IncomeExpenseSwitch,
-  type TransactionType,
-} from '@/components/IncomeExpenseSwitch'
-import { getCategories } from '@/api/categories'
 import { useQuery } from '@tanstack/react-query'
-import { CategoryCard } from '@/components/Category/CategoryCard'
-import { CategoryForm } from '@/components/Category/CategoryForm'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Plus } from 'lucide-react'
+
+import './Categories.scss'
+
+import { getCategories } from '@/api/categories'
+import { Button } from '@/components/ui/button'
+import { IncomeExpenseSwitch } from '@/components/Category/IncomeExpenseSwitch'
+import { CategoryCard } from '@/components/Category/CategoryCard'
+import { CategoryForm } from '@/components/Category/CategoryForm/CategoryForm'
+import type { CategoryToEdit, TransactionType } from '@/types/category'
 
 export const Categories = () => {
   const [type, setType] = useState<TransactionType>('expense')
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<
+    CategoryToEdit | undefined
+  >(undefined)
 
-  // const {
-  //   data: categories = [],
-  //   isLoading,
-  //   isError,
-  // } = useQuery({
-  //   queryKey: ['categories'],
-  //   queryFn: getCategories,
-  // })
-
-  const { data: categories = [] } = useQuery({
+  const {
+    data: categories = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['categories'],
     queryFn: getCategories,
   })
 
-  const openForm = () => {
+  const visibleCategories = categories.filter(
+    (category) => category.type === type,
+  )
+
+  const openCreateForm = () => {
+    setSelectedCategory(undefined)
     setIsFormOpen(true)
+  }
+
+  const openEditForm = (category: CategoryToEdit) => {
+    setSelectedCategory(category)
+    setIsFormOpen(true)
+  }
+
+  const closeForm = () => {
+    setIsFormOpen(false)
+    setSelectedCategory(undefined)
   }
 
   return (
@@ -39,78 +53,71 @@ export const Categories = () => {
       <div className="categories__header mb-6">
         <div>
           <h1 className="categories__title">Категории</h1>
+
           <p className="categories__subtitle">
             Управляйте своими категориями расходов и доходов.
           </p>
+
           <p className="categories__subtitle">
             Создайте подкатегории для более детального учета.
           </p>
         </div>
+
         <Button
           variant="accent"
           className="categories__add"
           type="button"
-          onClick={openForm}
+          onClick={openCreateForm}
         >
           <Plus />
           Добавить категорию
         </Button>
       </div>
 
-      {/* <div
-        className={`categories__container ${
-          isFormOpen ? 'categories__container--form-open' : ''
-        }`}
-      >
-        <div className="categories__main">
-          <IncomeExpenseSwitch value={type} onChange={setType} />
-          <div className="categories__items">
-            {categories
-              .filter((category) => category.type === type)
-              .map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  name={category.name}
-                  color={category.color}
-                  icon={category.icon}
-                  subcategories={category.subcategories}
-                />
-              ))}
-          </div>
-        </div>
-        {isFormOpen && (
-          <div className="categories__adding">
-            <CategoryForm onClose={() => setIsFormOpen(false)} />
-          </div>
-        )}
-      </div> */}
-
       <motion.div
         className={`categories__container ${
           isFormOpen ? 'categories__container--form-open' : ''
         }`}
-        layout
-        transition={{
-          layout: {
-            duration: 0.4,
-            ease: [0.22, 1, 0.36, 1],
-          },
-        }}
       >
-        <motion.div className="categories__main" layout>
+        <motion.div className="categories__main">
           <IncomeExpenseSwitch value={type} onChange={setType} />
 
-          <div className="categories__items">
-            {categories
-              .filter((category) => category.type === type)
-              .map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  name={category.name}
-                  color={category.color}
-                  icon={category.icon}
-                  subcategories={category.subcategories}
-                />
+          <div
+            className={`categories__items ${
+              isFormOpen ? 'categories__items--form-open' : ''
+            }`}
+          >
+            {isLoading && (
+              <p className="categories__message">Загружаем категории...</p>
+            )}
+
+            {isError && (
+              <div className="categories__message">
+                <p>Не удалось загрузить категории.</p>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  onClick={() => void refetch()}
+                >
+                  Повторить
+                </Button>
+              </div>
+            )}
+
+            {!isLoading && !isError && visibleCategories.length === 0 && (
+              <p className="categories__message">
+                {type === 'expense'
+                  ? 'Категорий расходов пока нет.'
+                  : 'Категорий доходов пока нет.'}
+              </p>
+            )}
+
+            {!isLoading &&
+              !isError &&
+              visibleCategories.map((category) => (
+                <motion.div key={category.id} layout>
+                  <CategoryCard category={category} onEdit={openEditForm} />
+                </motion.div>
               ))}
           </div>
         </motion.div>
@@ -141,7 +148,7 @@ export const Categories = () => {
               }}
               style={{ transformOrigin: 'right center' }}
             >
-              <CategoryForm onClose={() => setIsFormOpen(false)} />
+              <CategoryForm category={selectedCategory} onClose={closeForm} />
             </motion.div>
           )}
         </AnimatePresence>

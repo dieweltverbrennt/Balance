@@ -65,4 +65,22 @@
   &__bottom {
     margin-top: auto;
   }
+
+  &__logout {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+
+    &:hover:not(:disabled) {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+  }
 }

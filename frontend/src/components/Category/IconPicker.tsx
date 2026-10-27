@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Car,
   Coffee,
@@ -22,6 +21,8 @@ import {
   BriefcaseBusiness,
   BanknoteArrowUp,
   Shirt,
+  GraduationCap,
+  Ellipsis,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -50,6 +51,8 @@ const icons: Record<string, LucideIcon> = {
   BriefcaseBusiness,
   BanknoteArrowUp,
   Shirt,
+  GraduationCap,
+  Ellipsis,
 }
 
 interface IconPickerProps {
@@ -58,23 +61,19 @@ interface IconPickerProps {
 }
 
 export const IconPicker = ({ value, onChange }: IconPickerProps) => {
-  const SelectedIcon = icons[value] ?? ShoppingCart
-
-  const handleSelect = (iconName: string) => {
-    onChange(iconName)
-  }
-
   return (
     <div
       className={cn(
-        'h-[220px] w-full overflow-y-auto',
+        'scroll h-[220px] w-full overflow-y-auto',
         'rounded-[14px] border border-white/5',
         'bg-white/[0.093] p-3',
-        '[scrollbar-width:thin]',
-        '[scrollbar-color:rgba(255,255,255,0.18)_transparent]',
       )}
     >
-      <div className="grid grid-cols-6 gap-2">
+      <div
+        className="grid grid-cols-6 gap-2"
+        role="group"
+        aria-label="Выбор иконки категории"
+      >
         {Object.entries(icons).map(([iconName, Icon]) => {
           const isSelected = value === iconName
 
@@ -83,18 +82,17 @@ export const IconPicker = ({ value, onChange }: IconPickerProps) => {
               key={iconName}
               type="button"
               title={iconName}
+              aria-label={`Иконка ${iconName}`}
+              aria-pressed={isSelected}
               onClick={() => onChange(iconName)}
               className={cn(
-                'flex aspect-square items-center justify-center',
-                'rounded-xl',
-                'border border-transparent',
+                'flex aspect-square cursor-pointer items-center justify-center',
+                'rounded-xl border border-transparent',
                 'text-[var(--text)]',
                 'transition-all duration-150',
                 'hover:bg-white/[0.08]',
                 'focus-visible:outline-none',
                 'focus-visible:ring-2 focus-visible:ring-white/20',
-                'cursor-pointer',
-
                 isSelected && [
                   'border-white/10',
                   'bg-white/[0.14]',
@@ -103,7 +101,7 @@ export const IconPicker = ({ value, onChange }: IconPickerProps) => {
                 ],
               )}
             >
-              <Icon className="size-5" strokeWidth={1.7} />
+              <Icon aria-hidden="true" className="size-5" strokeWidth={1.7} />
             </button>
           )
         })}

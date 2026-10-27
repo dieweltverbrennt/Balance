@@ -1,29 +1,28 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 
 interface AuthState {
   accessToken: string | null
   name: string | null
+  isInitialized: boolean
   setAuthData: (accessToken: string, name: string) => void
   clearAuth: () => void
+  finishInitialization: () => void
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      accessToken: null,
-      name: null,
+export const useAuthStore = create<AuthState>()((set) => ({
+  accessToken: null,
+  name: null,
+  isInitialized: false,
 
-      setAuthData: (accessToken, name) => {
-        set({ accessToken, name })
-      },
+  setAuthData: (accessToken, name) => {
+    set({ accessToken, name })
+  },
 
-      clearAuth: () => {
-        set({ accessToken: null, name: null })
-      },
-    }),
-    {
-      name: 'auth',
-    },
-  ),
-)
+  clearAuth: () => {
+    set({ accessToken: null, name: null })
+  },
+
+  finishInitialization: () => {
+    set({ isInitialized: true })
+  },
+}))

@@ -10,9 +10,10 @@ import { Categories } from '@/pages/Categories/Categories'
 import { Analytics } from '@/pages/Analytics/Analytics'
 import { Settings } from '@/pages/Settings/Settings'
 import { Auth } from '@/pages/Auth/Auth'
+import { NotFound } from '@/pages/NotFound/NotFound'
 
 import { Toaster } from '@/components/ui/sonner'
-import { ProtectedRoute } from '@/router/ProtectedRoute'
+import { ProtectedRoute } from '@/app/router/ProtectedRoute'
 import './App.scss'
 
 export const App = () => {
@@ -33,6 +34,8 @@ export const App = () => {
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       <Toaster />
