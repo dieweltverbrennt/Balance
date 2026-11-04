@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CategoriesController } from './categories/categories.controller';
+import { AccountsModule } from './accounts/accounts.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { CategoriesController } from './categories/categories.controller';
     UsersModule,
     AuthModule,
     CategoriesModule,
+    AccountsModule,
   ],
 
   controllers: [AppController, CategoriesController],

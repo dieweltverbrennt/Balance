@@ -5,9 +5,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
+  RelationId,
 } from 'typeorm';
 
 import { Category } from '../../categories/entities/category.entity';
+import { Account } from '../../accounts/entities/account.entity';
 
 @Entity('users')
 export class User {
@@ -33,6 +37,16 @@ export class User {
 
   @OneToMany(() => Category, (category) => category.user)
   categories: Category[];
+
+  @OneToMany(() => Account, (account) => account.user)
+  accounts: Account[];
+
+  @ManyToOne(() => Account, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'default_account_id' })
+  defaultAccount: Account | null;
+
+  @RelationId((user: User) => user.defaultAccount)
+  defaultAccountId: string | null;
 
   @CreateDateColumn({
     name: 'created_at',
